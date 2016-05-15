@@ -5,10 +5,10 @@
 # Copy the UI_PRIVATE_KEY & API_PUBLIC_KEY from the API application
 
 config_env :[ENV_NAME] do
-  set :DB_KEY, [database encryption keys encoded with base64 urlsafe encoding]
-  set :MSG_KEY, [Session secret key]
-  set :CLIENT_ID, [GOOGLE DEVELOPER CLIENT ID]
-  set :CLIENT_SECRET, [GOOGLE DEVELOPER CLIENT SECRET]
+  set 'DB_KEY', [database encryption keys encoded with base64 urlsafe encoding]
+  set 'MSG_KEY', [Session secret key]
+  set 'CLIENT_ID', [GOOGLE DEVELOPER CLIENT ID]
+  set 'CLIENT_SECRET', [GOOGLE DEVELOPER CLIENT SECRET]
   set 'UI_PRIVATE_KEY', [Private key for UI App]
   set 'API_PUBLIC_KEY', [Public key for API]
 end
