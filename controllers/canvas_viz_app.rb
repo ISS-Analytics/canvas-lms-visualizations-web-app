@@ -19,9 +19,6 @@ configure :development, :test do
   ConfigEnv.path_to_config(absolute_path)
 end
 
-GOOGLE_OAUTH = 'https://accounts.google.com/o/oauth2/auth'
-GOOGLE_PARAMS = "?response_type=code&client_id=#{ENV['CLIENT_ID']}"
-
 # Visualizations for Canvas LMS Classes
 class CanvasVisualizationApp < Sinatra::Base
   include AppLoginHelper
@@ -65,12 +62,12 @@ class CanvasVisualizationApp < Sinatra::Base
   end
 
   get '/' do
-    slim :index
+    google_url = GetOAuthClientIDFromAPI.new.call
+    slim :index, locals: { google_url: google_url }
   end
 
   get '/oauth2callback_gmail/?' do
-    access_token = CallbackGmail.new(params, request).call
-    email = GoogleTeacherEmail.new(access_token).call
+    email = SendOAuthCodeToAPI.new(params['code']).call
     session[:auth_token] =
       if find_teacher(email)
         StoreEmailAsSessionVar.new(email).call
