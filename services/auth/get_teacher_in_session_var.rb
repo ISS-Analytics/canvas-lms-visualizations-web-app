@@ -8,6 +8,6 @@ class GetTeacherInSessionVar
     return nil unless @token
     decoded_token = JWT.decode @token, ENV['MSG_KEY'], true
     payload = decoded_token.first
-    Teacher.find_by_email(payload['email'])
+    payload['email']
   end
 end

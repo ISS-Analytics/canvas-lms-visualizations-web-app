@@ -6,10 +6,10 @@ Feel free to clone the repo.
 
 ### config_env.rb
 
-To generate `MSG_KEY` and `DB_KEY` for the config_env, simply run `rake keys_for_config` from the terminal and copy the generated keys to config_env.rb.
+See config/config_env.rb.example for instructions
 
 ### Gems & DB
 
 To get up and running on localhost, run `rake` from the terminal.
-- This will install the required gems and setup the database.
+- This will install the required gems.
 - The Rakefile has additional commands to help with deployment to heroku.

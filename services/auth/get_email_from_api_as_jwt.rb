@@ -1,5 +1,5 @@
 # Object to send code from Google OAuth to API
-class SendOAuthCodeToAPI
+class GetEmailFromAPIAsJWT
   def initialize(oauth_code)
     @oauth_code = oauth_code
   end
