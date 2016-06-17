@@ -16,7 +16,7 @@
         td
           a href="#" onclick="toggler(#{count})" Click to view
           br
-          textarea id="text-area-#{count}" style='display:none' rows='7' cols='50'
+          textarea id="text-area-#{count}" style='display:none' rows='7' cols='50' readonly="true"
             | #{token[3]}
         td align='center'
           input type='submit' name='_method' value='delete'
