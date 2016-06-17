@@ -7,15 +7,9 @@ class SaveTeacherPassword
   end
 
   def call
-    payload = EncryptPayload.new({ email: @email }.to_json).call
-    HTTParty.delete("#{@api}/tokens",
-                    headers: { 'AUTHORIZATION' => "Bearer #{payload}" })
-    teacher = Teacher.find_by_email(@email)
-    teacher.password = @password
-    if teacher.save
-      SavePasswordToSessionVar.new(@password, teacher.token_salt).call
-    else
-      fail('This is a weird one.')
-    end
+    payload = EncryptPayload.new(
+      { email: @email, password: @password }.to_json).call
+    HTTParty.post("#{@api}/save_password",
+                  headers: { 'AUTHORIZATION' => "Bearer #{payload}" })
   end
 end

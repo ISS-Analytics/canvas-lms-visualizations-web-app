@@ -1,12 +1,15 @@
 # Object to verify password provided by user
 class VerifyPassword
-  def initialize(current_teacher, password)
-    @current_teacher = current_teacher
+  def initialize(api, email, password)
+    @api = api
+    @email = email
     @password = password
   end
 
   def call
-    return 'no password found' if @current_teacher.hashed_password.nil?
-    Teacher.authenticate!(@current_teacher.email, @password)
+    payload = EncryptPayload.new(
+      { email: @email, password: @password }.to_json).call
+    HTTParty.get("#{@api}/verify_password",
+                 headers: { 'AUTHORIZATION' => "Bearer #{payload}" }).body
   end
 end
