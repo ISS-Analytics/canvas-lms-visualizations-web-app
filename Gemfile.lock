@@ -4,28 +4,21 @@ GEM
     activemodel (4.2.1)
       activesupport (= 4.2.1)
       builder (~> 3.1)
-    activerecord (4.2.1)
-      activemodel (= 4.2.1)
-      activesupport (= 4.2.1)
-      arel (~> 6.0)
     activesupport (4.2.1)
       i18n (~> 0.7)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
       thread_safe (~> 0.3, >= 0.3.4)
       tzinfo (~> 1.1)
-    arel (6.0.0)
     awesome_print (1.6.1)
     axiom-types (0.1.1)
       descendants_tracker (~> 0.0.4)
       ice_nine (~> 0.11.0)
       thread_safe (~> 0.3, >= 0.3.1)
-    bond (0.5.1)
     builder (3.2.2)
     chartkick (1.4.1)
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
-    concurrent-ruby (0.9.1)
     config_env (0.1.0)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
@@ -33,7 +26,6 @@ GEM
     ffi (1.9.10)
     groupdate (2.5.0)
       activesupport (>= 3)
-    hirb (0.7.3)
     httparty (0.13.7)
       json (~> 1.8)
       multi_xml (>= 0.5.2)
@@ -44,7 +36,6 @@ GEM
     kramdown (1.5.0)
     minitest (5.7.0)
     multi_xml (0.5.5)
-    pg (0.18.4)
     protected_attributes (1.0.9)
       activemodel (>= 4.0.1, < 5.0)
     puma (2.15.3)
@@ -61,33 +52,16 @@ GEM
       ffi
     rbnacl-libsodium (1.0.3)
       rbnacl (~> 3.0, >= 3.0.1)
-    ripl (0.7.1)
-      bond (~> 0.5.1)
-    ripl-multi_line (0.3.1)
-      ripl (>= 0.3.6)
-    ripl-rack (0.2.1)
-      rack (>= 1.0)
-      rack-test (~> 0.6.2)
-      ripl (>= 0.7.0)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
       tilt (>= 1.3, < 3)
-    sinatra-activerecord (2.0.6)
-      activerecord (>= 3.2)
-      sinatra (~> 1.0)
     slim (3.0.6)
       temple (~> 0.7.3)
       tilt (>= 1.3.3, < 2.1)
-    sqlite3 (1.3.10)
     temple (0.7.6)
     thread_safe (0.3.5)
     tilt (2.0.1)
-    tux (0.3.0)
-      ripl (>= 0.3.5)
-      ripl-multi_line (>= 0.2.4)
-      ripl-rack (>= 0.2.0)
-      sinatra (>= 1.2.1)
     tzinfo (1.2.2)
       thread_safe (~> 0.1)
     virtus (1.0.5)
@@ -101,18 +75,14 @@ PLATFORMS
 
 DEPENDENCIES
   activemodel
-  activerecord
   awesome_print
   chartkick
-  concurrent-ruby
   config_env
   groupdate
-  hirb
   httparty
   jwt
   kramdown
   minitest
-  pg
   protected_attributes
   puma
   rack
@@ -122,8 +92,5 @@ DEPENDENCIES
   rake
   rbnacl-libsodium
   sinatra
-  sinatra-activerecord
   slim
-  sqlite3
-  tux
   virtus

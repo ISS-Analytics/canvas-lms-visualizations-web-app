@@ -8,14 +8,11 @@ require 'slim/include'
 require 'rack-flash'
 require 'chartkick'
 require 'ap'
-require 'concurrent'
 require 'jwt'
 require 'json'
 require 'tilt/kramdown'
 
 configure :development, :test do
-  require 'hirb'
-  Hirb.enable
   absolute_path = File.absolute_path './config/config_env.rb'
   ConfigEnv.path_to_config(absolute_path)
 end
