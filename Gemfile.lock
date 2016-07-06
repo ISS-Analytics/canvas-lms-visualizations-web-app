@@ -23,7 +23,6 @@ GEM
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     equalizer (0.0.11)
-    ffi (1.9.10)
     groupdate (2.5.0)
       activesupport (>= 3)
     httparty (0.13.7)
@@ -32,12 +31,9 @@ GEM
     i18n (0.7.0)
     ice_nine (0.11.1)
     json (1.8.3)
-    jwt (1.5.0)
     kramdown (1.5.0)
     minitest (5.7.0)
     multi_xml (0.5.5)
-    protected_attributes (1.0.9)
-      activemodel (>= 4.0.1, < 5.0)
     puma (2.15.3)
     rack (1.6.4)
     rack-flash3 (1.0.5)
@@ -48,10 +44,6 @@ GEM
     rack-test (0.6.3)
       rack (>= 1.0)
     rake (10.4.2)
-    rbnacl (3.2.0)
-      ffi
-    rbnacl-libsodium (1.0.3)
-      rbnacl (~> 3.0, >= 3.0.1)
     sinatra (1.4.6)
       rack (~> 1.4)
       rack-protection (~> 1.4)
@@ -80,17 +72,14 @@ DEPENDENCIES
   config_env
   groupdate
   httparty
-  jwt
   kramdown
   minitest
-  protected_attributes
   puma
   rack
   rack-flash3
   rack-ssl-enforcer
   rack-test
   rake
-  rbnacl-libsodium
   sinatra
   slim
   virtus
