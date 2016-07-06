@@ -1,11 +1,8 @@
 # Copy this file to [app]/config/config_env.rb
 # Replace :[ENV_NAME] with environment name
 # Replace [*] with key
-# Copy the MSG_KEY, UI_PRIVATE_KEY & API_PUBLIC_KEY from the API application
 
 config_env :[ENV_NAME] do
   set 'MSG_KEY', [Session secret key]
-  set 'UI_PRIVATE_KEY', [Private key for UI App]
-  set 'API_PUBLIC_KEY', [Public key for API]
   set 'API_URL', [URL_OF_API/api/v1/]
 end
