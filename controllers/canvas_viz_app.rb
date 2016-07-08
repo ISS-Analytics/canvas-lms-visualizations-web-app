@@ -16,6 +16,9 @@ configure :development, :test do
   ConfigEnv.path_to_config(absolute_path)
 end
 
+LOGGED_OUT_MSG = 'You were inactive for 3 hours. You need to sign in again.'
+LOGOUT = "/logout?sym=error&msg=#{LOGGED_OUT_MSG}"
+
 # Visualizations for Canvas LMS Classes
 class CanvasVisualizationApp < Sinatra::Base
   enable :logging
@@ -74,7 +77,9 @@ class CanvasVisualizationApp < Sinatra::Base
     session[:auth_token] = nil
     session[:email] = nil
     session[:unleash_token] = nil
-    flash[:notice] = 'Logged out'
+    sym = params['sym'] ? params['sym'].to_sym : :notice
+    msg = params['msg'] ? params['msg'] : 'Logged out'
+    flash[sym] = msg
     redirect '/'
   end
 
@@ -86,22 +91,26 @@ class CanvasVisualizationApp < Sinatra::Base
     password = params['password']
     result = VerifyPassword.new(
       settings.api_root, @current_teacher, password).call
-    if result == 'no password found'
+    if result.code == 401
+      redirect LOGOUT
+    elsif result.body == 'no password found'
       flash[:error] = 'You\'re yet to save a password.'
       redirect '/welcome'
-    elsif result == 'wrong password'
+    elsif result.body == 'wrong password'
       flash[:error] = 'Wrong Password'
       redirect '/welcome'
     end
-    session[:unleash_token] = result
+    session[:unleash_token] = result.body
     redirect '/tokens'
   end
 
   post '/new_teacher', auth: [:teacher] do
     create_password_form = CreatePasswordForm.new(params)
     if create_password_form.valid?
-      session[:unleash_token] = SaveTeacherPassword.new(
+      result = SaveTeacherPassword.new(
         settings.api_root, @current_teacher, params['password']).call
+      redirect LOGOUT if result.code == 401
+      session[:unleash_token] = result.body
       redirect '/tokens'
     else
       flash[:error] = "#{create_password_form.error_message}."
@@ -112,8 +121,9 @@ class CanvasVisualizationApp < Sinatra::Base
   get '/tokens/?', auth: [:teacher, :api_payload] do
     url = "#{settings.api_root}/tokens"
     headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
-    tokens = HTTParty.get(url, headers: headers)
-    tokens = JSON.parse tokens
+    result = HTTParty.get(url, headers: headers)
+    redirect LOGOUT if result.code == 401
+    tokens = JSON.parse result.body
     slim :tokens, locals: { tokens: tokens }
   end
 
@@ -123,6 +133,8 @@ class CanvasVisualizationApp < Sinatra::Base
       url = "#{settings.api_root}/tokens"
       headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
       result = HTTParty.post(url, headers: headers, body: params)
+      redirect LOGOUT if result.code == 401
+      result = result.body
       msg = result.include?('saved') ? :notice : :error
       flash[msg] = "#{result}"
     else flash[:error] = "#{save_token_form.error_message}."
@@ -134,7 +146,9 @@ class CanvasVisualizationApp < Sinatra::Base
     url = "#{settings.api_root}/courses"
     headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
     body = { 'access_key' => params['access_key'] }
-    courses = HTTParty.get(url, headers: headers, body: body).body
+    result = HTTParty.get(url, headers: headers, body: body)
+    redirect LOGOUT if result.code == 401
+    courses = result.body
     slim :courses, locals: { courses: JSON.parse(courses),
                              token: params['access_key'] }
   end
@@ -145,7 +159,8 @@ class CanvasVisualizationApp < Sinatra::Base
     body = { 'access_key' => params['access_key'] }
     result = HTTParty.delete(url, headers: headers, body: body).code
     if result == 200 then flash[:notice] = 'Successfully deleted!'
-    elsif result == 401 then flash[:error] = 'You do not own this token!'
+    elsif result == 403 then flash[:error] = 'You do not own this token!'
+    elsif result.code == 401 then redirect LOGOUT
     else flash[:error] = 'This is a strange one :('
     end
     redirect '/tokens'
@@ -158,7 +173,9 @@ class CanvasVisualizationApp < Sinatra::Base
     body = { 'access_key' => params['access_key'] }
     activity, assignments, discussion_topics, student_summaries =
     %w(activity assignments discussion_topics student_summaries).map do |link|
-      HTTParty.get("#{url}#{link}", headers: headers, body: body)
+      result = HTTParty.get("#{url}#{link}", headers: headers, body: body)
+      redirect LOGOUT if result.code == 401
+      result.body
     end
     slim :dashboard, locals: {
       activities: JSON.parse(activity, quirks_mode: true),
@@ -180,6 +197,8 @@ class CanvasVisualizationApp < Sinatra::Base
     headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
     body = { 'access_key' => params['access_key'] }
     result = HTTParty.get(url, headers: headers, body: body)
+    redirect LOGOUT if result.code == 401
+    result = result.body
     slim :"#{params['data']}",
          locals: { data: JSON.parse(result, quirks_mode: true) }
   end
