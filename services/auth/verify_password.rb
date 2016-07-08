@@ -9,6 +9,6 @@ class VerifyPassword
   def call
     HTTParty.get("#{@api}/verify_password",
                  body: { password: @password },
-                 headers: { 'AUTHORIZATION' => "Bearer #{@payload}" }).body
+                 headers: { 'AUTHORIZATION' => "Bearer #{@payload}" })
   end
 end
