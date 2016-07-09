@@ -7,12 +7,15 @@
       th API Payload (For developers)
       th Delete Tokens
     - tokens.each do |token|
+      - obfuscated_canvas_token = token['obfuscated_canvas_token']
+      - canvas_url = token['canvas_url']
+      - access_key = token['access_key']
       - count += 1
       tr
-      form action="/tokens/#{token[2]}" method='post'
+      form action="/tokens/#{access_key}" method='post'
         td
-          a href="tokens/#{token[2]}" title='To access analytics' #{token[0]}
-        td #{token[1]}
+          a href="tokens/#{access_key}" title='To access analytics' #{obfuscated_canvas_token}
+        td #{canvas_url}
         td
           a href="#" onclick="toggler(#{count})" Click to view
           br
