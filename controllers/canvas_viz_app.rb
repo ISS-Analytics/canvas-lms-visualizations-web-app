@@ -45,10 +45,10 @@ class CanvasVisualizationApp < Sinatra::Base
   register do
     def auth(*types)
       condition do
-        if (types.include? :teacher) && !@current_teacher
+        if (types.include? :email_token) && !@email_token
           flash[:error] = 'You must be logged in to view that page'
           redirect '/'
-        elsif (types.include? :api_payload) && !@api_payload
+        elsif (types.include? :regular_token) && !@regular_token
           flash[:error] = 'You must enter a password to view that page'
           redirect '/welcome'
         end; end
@@ -56,9 +56,9 @@ class CanvasVisualizationApp < Sinatra::Base
   end
 
   before do
-    @current_teacher = session[:email_token]
-    @current_teacher_email = session[:email]
-    @api_payload = session[:regular_token]
+    @email_token = session[:email_token]
+    @email_address = session[:email]
+    @regular_token = session[:regular_token]
   end
 
   get '/' do
@@ -83,14 +83,14 @@ class CanvasVisualizationApp < Sinatra::Base
     redirect '/'
   end
 
-  get '/welcome/?', auth: [:teacher] do
+  get '/welcome/?', auth: [:email_token] do
     slim :welcome
   end
 
-  post '/retrieve', auth: [:teacher] do
+  post '/retrieve', auth: [:email_token] do
     password = params['password']
     result = VerifyPassword.new(
-      settings.api_root, @current_teacher, password).call
+      settings.api_root, @email_token, password).call
     if result.code == 401
       redirect LOGOUT
     elsif result.body == 'no password found'
@@ -104,11 +104,11 @@ class CanvasVisualizationApp < Sinatra::Base
     redirect '/tokens'
   end
 
-  post '/new_teacher', auth: [:teacher] do
+  post '/new_teacher', auth: [:email_token] do
     create_password_form = CreatePasswordForm.new(params)
     if create_password_form.valid?
       result = SaveTeacherPassword.new(
-        settings.api_root, @current_teacher, params['password']).call
+        settings.api_root, @email_token, params['password']).call
       redirect LOGOUT if result.code == 401
       session[:regular_token] = result.body
       redirect '/tokens'
@@ -118,20 +118,20 @@ class CanvasVisualizationApp < Sinatra::Base
     end
   end
 
-  get '/tokens/?', auth: [:teacher, :api_payload] do
+  get '/tokens/?', auth: [:email_token, :regular_token] do
     url = "#{settings.api_root}/tokens"
-    headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
+    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
     result = HTTParty.get(url, headers: headers)
     redirect LOGOUT if result.code == 401
     tokens = JSON.parse result.body
     slim :tokens, locals: { tokens: tokens }
   end
 
-  post '/tokens/?', auth: [:teacher, :api_payload] do
+  post '/tokens/?', auth: [:email_token, :regular_token] do
     save_token_form = SaveTokenForm.new(params)
     if save_token_form.valid?
       url = "#{settings.api_root}/tokens"
-      headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
+      headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
       result = HTTParty.post(url, headers: headers, body: params)
       redirect LOGOUT if result.code == 401
       result = result.body
@@ -142,9 +142,9 @@ class CanvasVisualizationApp < Sinatra::Base
     redirect '/tokens'
   end
 
-  get '/tokens/:access_key/?', auth: [:teacher, :api_payload] do
+  get '/tokens/:access_key/?', auth: [:email_token, :regular_token] do
     url = "#{settings.api_root}/courses"
-    headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
+    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
     body = { 'access_key' => params['access_key'] }
     result = HTTParty.get(url, headers: headers, body: body)
     redirect LOGOUT if result.code == 401
@@ -153,9 +153,9 @@ class CanvasVisualizationApp < Sinatra::Base
                              token: params['access_key'] }
   end
 
-  delete '/tokens/:access_key/?', auth: [:teacher, :api_payload] do
+  delete '/tokens/:access_key/?', auth: [:email_token, :regular_token] do
     url = "#{settings.api_root}/token"
-    headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
+    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
     body = { 'access_key' => params['access_key'] }
     result = HTTParty.delete(url, headers: headers, body: body).code
     if result == 200 then flash[:notice] = 'Successfully deleted!'
@@ -167,9 +167,9 @@ class CanvasVisualizationApp < Sinatra::Base
   end
 
   get '/tokens/:access_key/:course_id/dashboard/?',
-      auth: [:teacher, :api_payload] do
+      auth: [:email_token, :regular_token] do
     url = "#{settings.api_root}/courses/#{params['course_id']}/"
-    headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
+    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
     body = { 'access_key' => params['access_key'] }
     activity, assignments, discussion_topics, student_summaries =
     %w(activity assignments discussion_topics student_summaries).map do |link|
@@ -186,7 +186,7 @@ class CanvasVisualizationApp < Sinatra::Base
   end
 
   get '/tokens/:access_key/:course_id/:data/?',
-      auth: [:teacher, :api_payload] do
+      auth: [:email_token, :regular_token] do
     check_data = CheckData.new(data: params['data'])
     unless check_data.valid?
       flash[:error] = 'Please click an actual option'
@@ -194,7 +194,7 @@ class CanvasVisualizationApp < Sinatra::Base
     end
     url = "#{settings.api_root}/courses/"\
       "#{params['course_id']}/#{params['data']}"
-    headers = { 'AUTHORIZATION' => "Bearer #{@api_payload}" }
+    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
     body = { 'access_key' => params['access_key'] }
     result = HTTParty.get(url, headers: headers, body: body)
     redirect LOGOUT if result.code == 401
