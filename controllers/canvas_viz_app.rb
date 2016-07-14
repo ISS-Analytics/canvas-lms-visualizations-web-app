@@ -56,9 +56,9 @@ class CanvasVisualizationApp < Sinatra::Base
   end
 
   before do
-    @current_teacher = session[:auth_token]
+    @current_teacher = session[:email_token]
     @current_teacher_email = session[:email]
-    @api_payload = session[:unleash_token]
+    @api_payload = session[:regular_token]
   end
 
   get '/' do
@@ -68,15 +68,15 @@ class CanvasVisualizationApp < Sinatra::Base
 
   get '/oauth2callback_gmail/?' do
     email_from_api = GetEmailFromAPI.new(params['code']).call
-    session[:auth_token] = email_from_api['encrypted_email']
+    session[:email_token] = email_from_api['encrypted_email']
     session[:email] = email_from_api['email']
     redirect '/welcome'
   end
 
   get '/logout/?' do
-    session[:auth_token] = nil
+    session[:email_token] = nil
     session[:email] = nil
-    session[:unleash_token] = nil
+    session[:regular_token] = nil
     sym = params['sym'] ? params['sym'].to_sym : :notice
     msg = params['msg'] ? params['msg'] : 'Logged out'
     flash[sym] = msg
@@ -100,7 +100,7 @@ class CanvasVisualizationApp < Sinatra::Base
       flash[:error] = 'Wrong Password'
       redirect '/welcome'
     end
-    session[:unleash_token] = result.body
+    session[:regular_token] = result.body
     redirect '/tokens'
   end
 
@@ -110,7 +110,7 @@ class CanvasVisualizationApp < Sinatra::Base
       result = SaveTeacherPassword.new(
         settings.api_root, @current_teacher, params['password']).call
       redirect LOGOUT if result.code == 401
-      session[:unleash_token] = result.body
+      session[:regular_token] = result.body
       redirect '/tokens'
     else
       flash[:error] = "#{create_password_form.error_message}."
