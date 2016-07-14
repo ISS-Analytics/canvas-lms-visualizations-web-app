@@ -119,9 +119,7 @@ class CanvasVisualizationApp < Sinatra::Base
   end
 
   get '/tokens/?', auth: [:email_token, :regular_token] do
-    url = "#{settings.api_root}/tokens"
-    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
-    result = HTTParty.get(url, headers: headers)
+    result = GetListOfTokens.new(settings.api_root, @regular_token).call
     redirect LOGOUT if result.code == 401
     tokens = JSON.parse result.body
     slim :tokens, locals: { tokens: tokens }
@@ -130,9 +128,7 @@ class CanvasVisualizationApp < Sinatra::Base
   post '/tokens/?', auth: [:email_token, :regular_token] do
     save_token_form = SaveTokenForm.new(params)
     if save_token_form.valid?
-      url = "#{settings.api_root}/tokens"
-      headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
-      result = HTTParty.post(url, headers: headers, body: params)
+      result = SaveToken.new(settings.api_root, @regular_token, params).call
       redirect LOGOUT if result.code == 401
       result = result.body
       msg = result.include?('saved') ? :notice : :error
@@ -143,10 +139,8 @@ class CanvasVisualizationApp < Sinatra::Base
   end
 
   get '/tokens/:access_key/?', auth: [:email_token, :regular_token] do
-    url = "#{settings.api_root}/courses"
-    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
-    body = { 'access_key' => params['access_key'] }
-    result = HTTParty.get(url, headers: headers, body: body)
+    result = GetListOfCourses.new(
+      settings.api_root, @regular_token, params['access_key']).call
     redirect LOGOUT if result.code == 401
     courses = result.body
     slim :courses, locals: { courses: JSON.parse(courses),
@@ -154,12 +148,10 @@ class CanvasVisualizationApp < Sinatra::Base
   end
 
   delete '/tokens/:access_key/?', auth: [:email_token, :regular_token] do
-    url = "#{settings.api_root}/token"
-    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
-    body = { 'access_key' => params['access_key'] }
-    result = HTTParty.delete(url, headers: headers, body: body).code
-    if result == 200 then flash[:notice] = 'Successfully deleted!'
-    elsif result == 403 then flash[:error] = 'You do not own this token!'
+    result = DeleteToken.new(
+      settings.api_root, @regular_token, params['access_key']).call
+    if result.code == 200 then flash[:notice] = 'Successfully deleted!'
+    elsif result.code == 403 then flash[:error] = 'You do not own this token!'
     elsif result.code == 401 then redirect LOGOUT
     else flash[:error] = 'This is a strange one :('
     end
@@ -168,12 +160,10 @@ class CanvasVisualizationApp < Sinatra::Base
 
   get '/tokens/:access_key/:course_id/dashboard/?',
       auth: [:email_token, :regular_token] do
-    url = "#{settings.api_root}/courses/#{params['course_id']}/"
-    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
-    body = { 'access_key' => params['access_key'] }
     activity, assignments, discussion_topics, student_summaries =
     %w(activity assignments discussion_topics student_summaries).map do |link|
-      result = HTTParty.get("#{url}#{link}", headers: headers, body: body)
+      params['data'] = link
+      result = GetCourseData.new(settings.api_root, @regular_token, params).call
       redirect LOGOUT if result.code == 401
       result.body
     end
@@ -192,11 +182,7 @@ class CanvasVisualizationApp < Sinatra::Base
       flash[:error] = 'Please click an actual option'
       redirect "/tokens/#{params[:access_key]}"
     end
-    url = "#{settings.api_root}/courses/"\
-      "#{params['course_id']}/#{params['data']}"
-    headers = { 'AUTHORIZATION' => "Bearer #{@regular_token}" }
-    body = { 'access_key' => params['access_key'] }
-    result = HTTParty.get(url, headers: headers, body: body)
+    result = GetCourseData.new(settings.api_root, @regular_token, params).call
     redirect LOGOUT if result.code == 401
     result = result.body
     slim :"#{params['data']}",
