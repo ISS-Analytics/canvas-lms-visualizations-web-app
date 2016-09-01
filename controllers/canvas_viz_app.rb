@@ -61,6 +61,13 @@ class CanvasVisualizationApp < Sinatra::Base
     @regular_token = session[:regular_token]
   end
 
+  def invalid_token?(result)
+    result = CheckResult.new(result).call
+    return unless result
+    flash[:error] = result
+    redirect '/tokens'
+  end
+
   get '/' do
     google_url = GetOAuthClientIDFromAPI.new.call
     slim :index, locals: { google_url: google_url }
@@ -143,6 +150,7 @@ class CanvasVisualizationApp < Sinatra::Base
       settings.api_root, @regular_token, params['access_key']).call
     redirect LOGOUT if result.code == 401
     courses = result.body
+    invalid_token?(courses)
     slim :courses, locals: { courses: JSON.parse(courses),
                              token: params['access_key'] }
   end
@@ -165,6 +173,7 @@ class CanvasVisualizationApp < Sinatra::Base
       params['data'] = link
       result = GetCourseData.new(settings.api_root, @regular_token, params).call
       redirect LOGOUT if result.code == 401
+      invalid_token?(result.body)
       result.body
     end
     slim :dashboard, locals: {
@@ -185,6 +194,7 @@ class CanvasVisualizationApp < Sinatra::Base
     result = GetCourseData.new(settings.api_root, @regular_token, params).call
     redirect LOGOUT if result.code == 401
     result = result.body
+    invalid_token?(result)
     slim :"#{params['data']}",
          locals: { data: JSON.parse(result, quirks_mode: true) }
   end
